@@ -1,0 +1,130 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.17+ wizard for JavaCC 1.5.0+
+ */options{  static = false;}PARSER_BEGIN(queryGrammar)package queryParsePkg;
+
+import java.util.*;
+
+public class queryGrammar{
+  Vector<String> selectVector;
+  StringBuilder inputStream;
+  StringBuilder patternString;
+  Vector<String> predVector;
+  StringBuilder windowSize;
+  StringBuilder windowType;
+  
+  public static void main(String args []) throws ParseException  {    queryGrammar parser = new queryGrammar(System.in);
+    parser.Start(new Vector<String>(), new StringBuilder(), new StringBuilder(), new Vector<String>(), new StringBuilder(),
+    					new StringBuilder());  }}PARSER_END(queryGrammar)SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+|  "\r\n"
+}
+TOKEN [IGNORE_CASE] : /* OPERATORS */
+{
+  < SELECT : "SELECT" >
+| < FROM : "FROM" >
+| < AS : "AS" >
+| < PATTERN : "PATTERN" >
+| < WHERE : "WHERE" >
+| < WITHIN : "WITHIN" >
+| < AND : "AND" >
+}
+
+TOKEN :
+{
+  < DIGIT : ["0"-"9"] >
+| < CONSTANT : ~[",","=","<",">","!","0"-"9"] >
+}
+
+TOKEN :
+{
+  < EQ : "=" >
+| < NEQ : "!=" >
+| < GT : ">" >
+| < LT : "<" >
+| < GEQ : ">=" >
+| < LEQ : "<=" >
+| < COMMA : "," >
+}
+
+public void Start(Vector<String> sV, StringBuilder iS, StringBuilder pS, Vector<String> pV,
+			StringBuilder wS, StringBuilder wT) :
+{
+}
+{
+  { selectVector = sV; inputStream = iS; patternString = pS; predVector = pV; windowSize = wS; windowType = wT; }
+  query()
+  < EOF >
+}
+
+void query() :{}
+{	< SELECT > selectExp()
+	< FROM > fromExp()
+	< AS > < PATTERN >	patternExp()
+	[< WHERE > whereExp()]
+	[< WITHIN > withinExp()]
+}
+
+void selectExp() :
+{
+  String s = "";
+  Token t;}
+{
+  ((t = < CONSTANT > { s = s + t.image;  })  | (t = < DIGIT > { s = s + t.image;  })  )+
+  {    selectVector.add(s); }
+  (    < COMMA >    { s = ""; }
+  ((t = < CONSTANT > { s = s + t.image;  })  | (t = < DIGIT > { s = s + t.image;  })  )+
+	{   selectVector.add(s); }
+   )*
+}
+
+void fromExp() :
+{
+  String s = "";
+  Token t = null;
+}
+{
+  ( t = < CONSTANT > { s = s + t.image; } | t = < DIGIT > { s = s + t.image; } )+
+  {  inputStream.replace(0, inputStream.length(), s); }
+}
+
+void patternExp() :
+{
+  String s = "";
+  Token t = null;
+}
+{
+  ( ( t = < CONSTANT > { s = s + t.image; } | t = < DIGIT > { s = s + t.image; } ) | ( t = < COMMA > { s = s + t.image; } ))+
+  {  patternString.replace(0, patternString.length(), s); }
+}
+
+void whereExp() :
+{
+  String s1 = "", s2 = "", s3 = "";
+  Token t = null;
+}
+{
+  ( ( t = < CONSTANT > { s1 = s1 + t.image; } ) | ( t = < DIGIT > { s1 = s1 + t.image; } ))+
+  ((t = < EQ >) | (t = < NEQ >) | (t = < GT >) | (t = < LT >) | (t = < GEQ >) | (t = < LEQ >)) { s2 = t.image; }
+  ( ( t = < CONSTANT > { s3 = s3 + t.image; } ) | ( t = < DIGIT > { s3 = s3 + t.image; } ))+
+  { predVector.add (s1 + " " + s2 + " " + s3); }
+  ( < AND >  { s1 = ""; s2 = ""; s3 = ""; }
+  (t = < CONSTANT > { s1 = s1 + t.image;  } | t = < DIGIT >  { s1 = s1 + t.image;  } )+
+  ((t = < EQ >) | (t = < NEQ >) | (t = < GT >) | (t = < LT >) | (t = < GEQ >) | (t = < LEQ >)) { s2 = t.image; }
+  (t = < CONSTANT > { s3 = s3 + t.image;  } | t = < DIGIT >  { s3 = s3 + t.image;  } )+
+  { predVector.add (s1 + " " + s2 + " " + s3); }
+  )*
+}
+
+void withinExp() :
+{	String num = "";
+	String type = "";
+	Token t = null;
+}
+{
+  (t = < DIGIT > { num = num + t.image;  }  )+
+  (t = < CONSTANT > { type = type + t.image;  }  )+
+  { windowSize.replace(0, windowSize.length(), num); windowType.replace(0, windowType.length(), type); }}
