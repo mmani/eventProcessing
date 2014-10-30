@@ -1,0 +1,187 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.17+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+  NODE_DEFAULT_VOID = true;
+  static = false;
+}
+
+PARSER_BEGIN(regExpGrammar2)
+package com.umflint.edu.regExParsePkg.generated;
+
+public class regExpGrammar2
+{
+  public static void main(String args []) throws ParseException
+  {
+    regExpGrammar2 parser = new regExpGrammar2(System.in);
+	parser.Start();
+  }
+}
+
+PARSER_END(regExpGrammar2)
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+|  "\r\n"
+}
+
+TOKEN : /* OPERATORS */
+{
+  < PLUS : "+" >
+| < CHOICE : "|" >
+| < STAR : "*" >
+| < CONCAT : "," >
+| < NOT : "!" >
+| < OPENPAR : "(" >
+| < CLOSEPAR : ")" >
+| < COLON : ":" >
+}
+
+TOKEN :
+{
+  < CONSTANT : (~[",","|","+","(",")","!",":"])+ >
+}
+
+public SimpleNode Start() #START :
+{
+}
+{
+	expr()
+  < EOF >
+  {
+    jjtThis.jjtSetValue("START");
+    return jjtThis;
+  }
+}
+
+void expr() :
+{
+}
+{
+	(	  term()
+    ( concatExpr() | choiceExpr() )*
+    {
+      // jjtThis.jjtSetValue("EXPR");
+    } ) |
+    (
+      negTerm()
+      )
+}
+
+void negTerm() #NEGCONCAT(2) :
+{
+}
+{
+    < NOT >
+  { jjtThis.jjtSetValue("NOT");
+  }
+    term()
+	< CONCAT >
+	( term() | negTerm () )
+}
+
+
+void concatExpr() #CONCAT(2) :
+{}
+{
+	< CONCAT >
+	{
+	  jjtThis.jjtSetValue("CONCAT");
+	}
+	( positiveConcatExpr() | negativeConcatExpr() )
+}
+
+
+void positiveConcatExpr() :
+{
+}
+{
+	term()
+}
+
+void negativeConcatExpr() #NEGCONCAT(2) :
+{
+}
+{
+    < NOT >
+  { jjtThis.jjtSetValue("NOT");
+  }
+    term()
+	< CONCAT >
+	( term() | negativeConcatExpr() )
+}
+
+
+void choiceExpr() #CHOICE(2) :
+{
+}
+{
+	< CHOICE >
+	{
+	  jjtThis.jjtSetValue("CHOICE");
+	}
+	term()
+}
+
+void term() :
+{
+}
+{
+  finalTerm() | nestedExpr()
+}
+
+void finalTerm() #TERM :
+{
+}
+{
+      element()
+  {
+    jjtThis.jjtSetValue ("UNARY");
+  }
+  [<PLUS> { jjtThis.jjtSetValue ("PLUS"); }]
+
+  
+}
+
+void nestedExpr() :
+{
+}
+{
+  < OPENPAR >
+  expr() [ aliasExpr() ]
+  < CLOSEPAR >
+}
+
+void aliasExpr() #ALIAS(2) :
+{
+}
+{
+  {
+     jjtThis.jjtSetValue("ALIAS");
+   }
+  < COLON > element()
+}
+
+/* void notExpr() #NOT :
+{
+}
+{
+  < NOT > { jjtThis.jjtSetValue ("NOT"); }
+  term()
+} */
+
+void element() #ELEMENT :
+{
+	Token t;
+}
+{
+	t = <CONSTANT>
+	{
+		jjtThis.jjtSetValue(t.image);
+	}
+}

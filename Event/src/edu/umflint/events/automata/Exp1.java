@@ -51,7 +51,7 @@ public class Exp1 {
 			e.printStackTrace();
 		}
 
-		try {
+/*		try {
 			ConcurrentLinkedQueue<String> q1 = new ConcurrentLinkedQueue<String>();
 			ConcurrentLinkedQueue<String> q2 = new ConcurrentLinkedQueue<String>();
 			BufferedReader r = new BufferedReader(new FileReader("input.txt"));
@@ -409,7 +409,7 @@ public class Exp1 {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}*/
 
 
 
