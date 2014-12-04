@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NFAOperator implements Runnable {
-	
+
 	ConcurrentLinkedQueue<String> inputQ;
 	ConcurrentLinkedQueue<String> outputQ;
 	Automaton2 aut;
@@ -18,7 +18,7 @@ public class NFAOperator implements Runnable {
 		currStateSet.add (a.startSt);
 		this.window = window;
 	}
-		
+
 	public String extendSym(String s) {
 		String retVal = "";
 
@@ -53,13 +53,24 @@ public class NFAOperator implements Runnable {
 			String event = extendSym(event1);
 
 			doneList.clear();
-			
+
 			HashSet<State> nextState = new HashSet<State>();
 			// for each state in currState, get the set of transitions.
 			epsClosure(currStateSet);
 			Iterator<State> currIt = currStateSet.iterator();
 			while (currIt.hasNext()) {
 				State st1 = currIt.next();
+				if(event1.equals("%") && st1.jumpToFinalSate==true){
+				     //System.out.println("Setting Final State");
+				     Iterator<State> finalstIt =aut.finalSt.iterator();
+				     while (finalstIt.hasNext()) {
+				      State flst = finalstIt.next();
+				      if (!nextState.contains(flst)){
+				       nextState.add(flst);
+				      }
+				     }
+				     //System.out.println("Setting Final Complete");
+    			}
 				if (aut.transitions.get(st1).get(event) == null) continue;
 				Iterator<State> stIt = aut.transitions.get(st1).get(event).iterator();
 				while (stIt.hasNext()) {
@@ -78,15 +89,15 @@ public class NFAOperator implements Runnable {
 			currStateSet = nextState;
 
 			HashSet<String> doneActions = new HashSet<String>();
-			
+
 			for (State currState: currStateSet) {
 				LinkedHashSet<Buffer> curBufferSet = aut.stateBufferLink.get(currState);
 				if ((curBufferSet == null) || (curBufferSet.isEmpty())) continue; // no buffers for the state -- so continue
-				
+
 				LinkedList<Buffer> curBufferList = new LinkedList<Buffer>();
 				curBufferList.addAll(curBufferSet);
 				Collections.sort(curBufferList);
-				
+
 				Iterator<Buffer> bufferIt = curBufferList.iterator();  //iterate through the buffers given by the automaton for the state
 				Buffer curBuffer;
 				while (bufferIt.hasNext()) // fill all prev event buffers first
@@ -152,7 +163,7 @@ public class NFAOperator implements Runnable {
 								while (it3.hasNext()) {
 									String el2 = it3.next();
 									boolean formRes = true;
-									
+
 									// find the latest timestamp among elements in el1Arr = t1
 									// find the earliest timeStamp among elements in el2Arr = t2
 									// form a result only when t1 < t2
@@ -173,15 +184,15 @@ public class NFAOperator implements Runnable {
 										curr = Integer.parseInt(s1);
 										if (min == 0) { min = curr; }
 										min = (curr < min ? curr : min);
-										max2 = (curr > max2 ? curr : max2);									
+										max2 = (curr > max2 ? curr : max2);
 									}
 									if (max >= min) formRes = false;
-									
+
 									// also check max2 has timestamp = current event (called next) timestamp
 									String s3[] = next.split(pattern);
 									int currTime = Integer.parseInt(s3[1]);
 									if (currTime > max2) formRes = false;
-									
+
 									if (formRes) {
 										String item = el1 + ":" + el2;
 										clearBuffer(destBuffer, item);
@@ -201,7 +212,7 @@ public class NFAOperator implements Runnable {
 			}
 		}
 	}
-	
+
 	public void clearBuffer(LinkedList<String> buffer, String item) {
 		String pattern = "[^0-9]+";
 		String s[] = item.split(pattern);
@@ -224,7 +235,7 @@ public class NFAOperator implements Runnable {
 			if ((max - min) > window) buffer.remove(buffer.indexOf(bItem));
 		}
 	}
-	
+
 	public boolean checkWindow(String item) {
 		String pattern = "[^0-9]+";
 		String s[] = item.split(pattern);
@@ -260,4 +271,3 @@ public class NFAOperator implements Runnable {
 		return;
 	}
 }
-	
